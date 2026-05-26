@@ -18,7 +18,7 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   return (
     <div className={cn("flex flex-col gap-4", className)} {...props}>
-      <Card className="overflow-hidden bg-gradient-to-br from-[#637a6a] via-[#191d23] to-[#2d3730] p-0">
+      <Card className="overflow-hidden bg-gradient-to-br from-[#5f7465] via-[#191d23] to-[#2d3730] p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
           <form className="p-6 md:p-8">
             <FieldGroup>
@@ -30,7 +30,7 @@ export function LoginForm({
               <div className="flex flex-col items-center text-center">
                 <h1 className="text-2xl font-bold">Welcome back</h1>
                 <p className="text-balance text-muted-foreground">
-                  Login to your  account
+                  Login to your account
                 </p>
               </div>
               <Field>

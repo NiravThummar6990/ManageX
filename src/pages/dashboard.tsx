@@ -26,7 +26,7 @@ export default function Dashboard() {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+        <header className="relative flex h-14 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
           <div className="flex items-center justify-between gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator
@@ -36,22 +36,49 @@ export default function Dashboard() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink onClick={() => navigate("/")}>
+                  <BreadcrumbLink
+                    onClick={() => navigate("/")}
+                    className="text-[18px]"
+                  >
                     Home{" "}
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Task </BreadcrumbPage>
-                </BreadcrumbItem>
+                {/* <BreadcrumbItem>
+                  <BreadcrumbPage className="text-[18px]"> */}
+                <span className="flex items-center gap-2 bg-gradient-to-r from-green-400 via-blue-500 to-purple-500 bg-clip-text text-[20px] font-extrabold tracking-tight text-transparent select-none">
+                  <svg
+                    width="26"
+                    height="26"
+                    viewBox="0 0 24 24"
+                    className="mr-1 inline text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="3" y="3" width="7" height="7" rx="2" />
+                    <rect x="14" y="3" width="7" height="7" rx="2" />
+                    <rect x="14" y="14" width="7" height="7" rx="2" />
+                    <rect x="3" y="14" width="7" height="7" rx="2" />
+                  </svg>
+                  Manage
+                  <span className="bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text font-black text-transparent">
+                    X
+                  </span>
+                </span>
+
+                {/* </BreadcrumbPage>
+                </BreadcrumbItem> */}
               </BreadcrumbList>
             </Breadcrumb>
           </div>
-          <div>
+          <div className="absolute right-4">
             {" "}
             <Button
-              variant={"secondary"}
-              className="w-fit"
+              variant={"outline"}
+              className="px-x w-fit rounded-full py-1"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               aria-label="Toggle theme"
             >
@@ -59,14 +86,6 @@ export default function Dashboard() {
             </Button>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
-          </div>
-          <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
-        </div>
       </SidebarInset>
     </SidebarProvider>
   )

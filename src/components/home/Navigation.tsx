@@ -2,22 +2,22 @@ import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { Button } from "../ui/button"
 import UnorderedListIcon from "../ui/unordered-list-icon"
-import { SunMoon } from "lucide-react"
-import { useTheme } from "@/components/theme-provider"
+import { GiDeerHead } from "react-icons/gi"
+// import { useTheme } from "@/components/theme-provider"
 export default function Navigation() {
   const navigate = useNavigate()
-  const { theme, setTheme } = useTheme()
+  // const { theme, setTheme } = useTheme()
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const MENU = [
     {
-      name: "Home",
+      name: <GiDeerHead />,
       link: "/",
     },
-    {
-      name: "About",
-      link: "/about",
-    },
+    // {
+    //   name: "About",
+    //   link: "/about",
+    // },
   ]
 
   return (
@@ -38,7 +38,7 @@ export default function Navigation() {
           <div className="hidden flex-row items-center gap-4 md:flex md:gap-8">
             {MENU.map((i) => (
               <Link
-                key={i.name}
+                key={i.link}
                 to={i.link}
                 className="pointer-events-auto text-base font-medium"
               >
@@ -61,14 +61,14 @@ export default function Navigation() {
           <div className="hidden flex-row items-center gap-4 md:flex">
             {/* Theme switcher using theme-provider */}
 
-            <Button
+            {/* <Button
               variant={"secondary"}
               className="w-fit"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               aria-label="Toggle theme"
             >
               <SunMoon />
-            </Button>
+            </Button> */}
             <Button onClick={() => navigate("/login")}>Login</Button>
             <Button onClick={() => navigate("/register")}>Sign Up</Button>
           </div>
@@ -87,9 +87,9 @@ export default function Navigation() {
           <nav className="flex flex-col gap-6">
             {MENU.map((i) => (
               <Link
-                key={i.name}
+                key={i.link}
                 to={i.link}
-                className="text-lg font-medium"
+                className="text-2 font-medium"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {i.name}
@@ -97,9 +97,14 @@ export default function Navigation() {
             ))}
           </nav>
           <div className="mt-8 flex flex-col gap-4">
-            <Button className="w-full">
+            {/* <Button
+              variant={"secondary"}
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              aria-label="Toggle theme"
+              className="w-full"
+            >
               <SunMoon />
-            </Button>
+            </Button> */}
             <Button onClick={() => navigate("/login")} className="w-full">
               Login
             </Button>
