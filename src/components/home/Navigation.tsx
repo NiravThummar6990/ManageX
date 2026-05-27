@@ -90,7 +90,7 @@ export default function Navigation() {
                 key={i.link}
                 to={i.link}
                 className="text-2 font-medium"
-                onClick={() => setMobileMenuOpen(false)}
+                  onClick={() => setMobileMenuOpen(false)}
               >
                 {i.name}
               </Link>

@@ -44,12 +44,19 @@ export function TeamSwitcher({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                {activeTeam.logo}
+              <div className="flex aspect-square size-10 items-center justify-center rounded-lg">
+                <img src="../src/assets/logo.png" alt="logo" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{activeTeam.name}</span>
-                <span className="truncate text-xs">{activeTeam.plan}</span>
+                <span className="flex items-center gap-2 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-[20px] font-extrabold tracking-tight text-transparent select-none">
+                  Manage
+                  <span className="bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text font-black text-transparent">
+                    X
+                  </span>
+                </span>
+
+                {/* <span className="truncate font-medium">{activeTeam.name}</span>
+                <span className="truncate text-xs">{activeTeam.plan}</span> */}
               </div>
               {/* <ChevronsUpDownIcon className="ml-auto" /> */}
             </SidebarMenuButton>

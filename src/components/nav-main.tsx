@@ -14,6 +14,7 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
 import { ChevronRightIcon } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 export function NavMain({
   items,
@@ -29,6 +30,7 @@ export function NavMain({
     }[]
   }[]
 }) {
+  const navigate = useNavigate()
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
@@ -42,7 +44,7 @@ export function NavMain({
           >
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
-                <SidebarMenuButton>
+                <SidebarMenuButton onClick={() => navigate(item.url)}>
                   {item.icon}
                   <span>{item.title}</span>
                   {/* <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" /> */}

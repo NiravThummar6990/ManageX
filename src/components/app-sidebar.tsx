@@ -14,7 +14,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import {
-  TerminalSquareIcon, 
+  TerminalSquareIcon,
   Motorbike,
   BookOpenCheck,
   Gpu,
@@ -33,9 +33,9 @@ const data = {
   },
   teams: [
     {
-      name: "Acme Inc",
+      name: "ManageX",
       logo: <Motorbike />,
-      plan: "Enterprise",
+      plan: "Pro", // plan based on your website
     },
     // {
     //   name: "Acme Corp.",
@@ -51,7 +51,7 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: <TerminalSquareIcon />,
       isActive: true,
       // items: [
@@ -71,7 +71,7 @@ const data = {
     },
     {
       title: "My Tasks",
-      url: "#",
+      url: "/dashboard/mytasks",
       icon: <BookOpenCheck />,
       // items: [
       //   {
@@ -90,7 +90,7 @@ const data = {
     },
     {
       title: "In Progress",
-      url: "#",
+      url: "/dashboard/inprogress",
       icon: <Gpu />,
 
       // items: [
@@ -114,7 +114,7 @@ const data = {
     },
     {
       title: "Completed",
-      url: "#",
+      url: "/dashboard/complete",
       icon: <ListChecks />,
       // items: [
       //   {
@@ -137,7 +137,7 @@ const data = {
     },
     {
       title: "Calendar",
-      url: "#",
+      url: "/dashboard/calender",
       icon: <CalendarSearch />,
       // items: [
       //   {
