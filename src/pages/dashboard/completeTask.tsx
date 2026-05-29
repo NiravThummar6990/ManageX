@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import DoubleCheckIcon from "@/components/ui/double-check-icon"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,115 +36,57 @@ import {
   RotateCcw,
   CalendarCheck,
   Trophy,
-  Clock,
   AlertCircle,
   CircleArrowOutUpRight,
   PlayCircle,
 } from "lucide-react"
-import { useState } from "react"
-import { MdAssignment, MdPendingActions, MdTaskAlt } from "react-icons/md"
+import { useMemo, useState } from "react"
 import { toast } from "sonner"
-
-type Priority = "High" | "Medium" | "Low"
-type Status = "pending" | "in-progress" | "completed"
-
-interface Task {
-  id: string
-  description: string
-  priority: Priority
-  dueDate: string
-  completedDate: string
-  status: Status
-}
-
-const INITIAL_TASKS: Task[] = [
-  {
-    id: "1",
-    description: "Compress and convert homepage graphics to WebP format.",
-    priority: "Low",
-    dueDate: "June 10, 2026",
-    completedDate: "June 08, 2026",
-    status: "completed",
-  },
-  {
-    id: "2",
-    description: "Set up automated nightly cron jobs for PostgreSQL backup.",
-    priority: "High",
-    dueDate: "May 29, 2026",
-    completedDate: "May 28, 2026",
-    status: "completed",
-  },
-  {
-    id: "3",
-    description: "Fix navigation bug on mobile responsive menu.",
-    priority: "Medium",
-    dueDate: "May 25, 2026",
-    completedDate: "May 24, 2026",
-    status: "completed",
-  },
-  {
-    id: "4",
-    description: "Update README with deployment instructions.",
-    priority: "Low",
-    dueDate: "May 20, 2026",
-    completedDate: "May 19, 2026",
-    status: "completed",
-  },
-  {
-    id: "5",
-    description: "Configure ESLint and Prettier for consistent code style.",
-    priority: "Medium",
-    dueDate: "May 22, 2026",
-    completedDate: "May 21, 2026",
-    status: "completed",
-  },
-  {
-    id: "6",
-    description: "Integrate Stripe payment gateway for subscriptions.",
-    priority: "High",
-    dueDate: "May 30, 2026",
-    completedDate: "May 29, 2026",
-    status: "completed",
-  },
-]
+import DoubleCheckIcon from "@/components/ui/double-check-icon"
+import { formatDate, getTaskStats } from "@/lib/task-utils"
+import { useTaskStore } from "@/store/task-store"
+import type { Priority } from "@/types/task"
 
 export default function CompleteTask() {
-  const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS)
+  const tasks = useTaskStore((s) => s.tasks)
+  const restoreTask = useTaskStore((s) => s.restoreTask)
+  const deleteTask = useTaskStore((s) => s.deleteTask)
+
+  const completedTasks = useMemo(
+    () => tasks.filter((t) => t.status === "completed"),
+    [tasks]
+  )
+
+  const stats = getTaskStats(tasks)
+
   const [isDeleteOpen, setIsDeleteOpen] = useState<string | null>(null)
   const [isRestoreOpen, setIsRestoreOpen] = useState<string | null>(null)
-
-  // Stats
-  const totalTasks = 16
-  const pendingTasks = 5
-  const completedTasks = tasks.length
-  const inProgressTasks = 3
 
   const CARDDATA = [
     {
       name: "Total Tasks",
-      count: totalTasks,
+      count: stats.total,
       icon: <CircleArrowOutUpRight className="text-blue-500" />,
       color: "border-blue-500",
       url: "/dashboard/mytasks",
     },
     {
       name: "Pending Tasks",
-      count: pendingTasks,
+      count: stats.pending,
       icon: <AlertCircle className="text-yellow-500" />,
       color: "border-yellow-500",
-      url: "/dashboard/pending",
+      url: "/dashboard/mytasks",
     },
     {
       name: "In Progress",
-      count: inProgressTasks,
+      count: stats.inProgress,
       icon: <PlayCircle className="text-orange-500" />,
-
       color: "border-orange-500",
       url: "/dashboard/inprogress",
     },
     {
       name: "Complete Tasks",
-      count: completedTasks,
+      count: stats.completed,
       icon: <CheckCircle2 className="text-green-500" />,
       color: "border-green-500",
       url: "/dashboard/complete",
@@ -153,13 +94,13 @@ export default function CompleteTask() {
   ]
 
   const handleDelete = (id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id))
+    deleteTask(id)
     setIsDeleteOpen(null)
     toast.success(`Task #${id} deleted successfully.`)
   }
 
   const handleRestore = (id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id))
+    restoreTask(id)
     setIsRestoreOpen(null)
     toast.success(`Task #${id} restored to pending.`)
   }
@@ -183,7 +124,6 @@ export default function CompleteTask() {
       <StatusCard data={CARDDATA} />
 
       <div className="m-4 grid grid-cols-1 items-start gap-6 md:grid-cols-4">
-        {/* LEFT SECTION: Completed Tasks Table */}
         <div className="col-span-1 overflow-hidden border bg-card shadow-sm md:col-span-4">
           <div className="flex items-center gap-2 border-b bg-muted/40 p-4">
             <CheckCircle2 className="h-5 w-5 text-green-500" />
@@ -191,7 +131,7 @@ export default function CompleteTask() {
               Completed Tasks
             </h2>
             <Badge variant="secondary" className="ml-2 text-[10px]">
-              {tasks.length} Tasks
+              {completedTasks.length} Tasks
             </Badge>
           </div>
           <div className="overflow-x-auto">
@@ -210,8 +150,8 @@ export default function CompleteTask() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tasks.length > 0 ? (
-                  tasks.map((data) => (
+                {completedTasks.length > 0 ? (
+                  completedTasks.map((data) => (
                     <TableRow
                       key={data.id}
                       className="transition-colors hover:bg-muted/40"
@@ -236,12 +176,14 @@ export default function CompleteTask() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center text-xs text-muted-foreground">
-                        {data.dueDate}
+                        {formatDate(data.dueDate)}
                       </TableCell>
                       <TableCell className="text-center text-xs font-medium text-green-600">
                         <div className="flex items-center justify-center gap-1.5">
                           <CalendarCheck className="h-3.5 w-3.5" />
-                          {data.completedDate}
+                          {data.completedDate
+                            ? formatDate(data.completedDate)
+                            : "—"}
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
@@ -267,17 +209,13 @@ export default function CompleteTask() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            {/* Restore to Pending */}
                             <DropdownMenuItem
                               className="cursor-pointer gap-2 text-yellow-600 focus:text-yellow-600"
                               onSelect={() => setIsRestoreOpen(data.id)}
                             >
                               <RotateCcw className="h-4 w-4" /> Restore
                             </DropdownMenuItem>
-
                             <DropdownMenuSeparator />
-
-                            {/* Delete */}
                             <DropdownMenuItem
                               className="cursor-pointer gap-2 text-red-500 focus:text-red-500"
                               onSelect={() => setIsDeleteOpen(data.id)}
@@ -287,7 +225,6 @@ export default function CompleteTask() {
                           </DropdownMenuContent>
                         </DropdownMenu>
 
-                        {/* Restore Dialog */}
                         <AlertDialog
                           open={isRestoreOpen === data.id}
                           onOpenChange={(open) =>
@@ -321,7 +258,6 @@ export default function CompleteTask() {
                           </AlertDialogContent>
                         </AlertDialog>
 
-                        {/* Delete Dialog */}
                         <AlertDialog
                           open={isDeleteOpen === data.id}
                           onOpenChange={(open) =>
@@ -334,8 +270,8 @@ export default function CompleteTask() {
                                 Delete Task #{data.id}
                               </AlertDialogTitle>
                               <AlertDialogDescription>
-                                "Are you sure you want to delete this task? This
-                                action cannot be undone."
+                                Are you sure you want to delete this task? This
+                                action cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>

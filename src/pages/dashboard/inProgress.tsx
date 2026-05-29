@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,117 +29,65 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import PenIcon from "@/components/ui/pen-icon"
 import TrashIcon from "@/components/ui/trash-icon"
 import {
   Clock,
   MoreHorizontalIcon,
-  CircleArrowOutUpRight,
   CheckCircle2,
   AlertCircle,
   PlayCircle,
   PauseCircle,
+  CircleArrowOutUpRight,
 } from "lucide-react"
-import { useState } from "react"
-import { MdAssignment, MdPendingActions, MdTaskAlt } from "react-icons/md"
-import { useNavigate } from "react-router-dom"
+import { useMemo, useState } from "react"
 import { toast } from "sonner"
 import AccessibilityIcon from "@/components/ui/accessibility-icon"
-
-type Priority = "High" | "Medium" | "Low"
-type Status = "pending" | "in-progress" | "completed"
-
-interface Task {
-  id: string
-  description: string
-  priority: Priority
-  dueDate: string
-  status: Status
-  startedAt: string
-}
-
-const INITIAL_TASKS: Task[] = [
-  {
-    id: "1",
-    description:
-      "Sync the new design system components with the frontend team.",
-    priority: "Medium",
-    dueDate: "June 01, 2026",
-    status: "in-progress",
-    startedAt: "May 25, 2026",
-  },
-  {
-    id: "2",
-    description: "Implement OAuth2 authentication with Google and GitHub.",
-    priority: "High",
-    dueDate: "June 15, 2026",
-    status: "in-progress",
-    startedAt: "May 26, 2026",
-  },
-  {
-    id: "3",
-    description: "Refactor authentication middleware for enhanced security.",
-    priority: "High",
-    dueDate: "June 25, 2026",
-    status: "in-progress",
-    startedAt: "May 27, 2026",
-  },
-  {
-    id: "4",
-    description: "Optimize database queries for user dashboard analytics.",
-    priority: "Medium",
-    dueDate: "June 08, 2026",
-    status: "in-progress",
-    startedAt: "May 28, 2026",
-  },
-  {
-    id: "5",
-    description: "Set up CI/CD pipeline for staging environment.",
-    priority: "Low",
-    dueDate: "June 12, 2026",
-    status: "in-progress",
-    startedAt: "May 24, 2026",
-  },
-]
+import { formatDate, getTaskStats } from "@/lib/task-utils"
+import { useTaskStore } from "@/store/task-store"
+import type { Priority, Status } from "@/types/task"
 
 export default function InProgress() {
-  const navigate = useNavigate()
-  const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS)
+  const tasks = useTaskStore((s) => s.tasks)
+  const completeTask = useTaskStore((s) => s.completeTask)
+  const pauseTask = useTaskStore((s) => s.pauseTask)
+  const deleteTask = useTaskStore((s) => s.deleteTask)
+
+  const inProgressTasks = useMemo(
+    () => tasks.filter((t) => t.status === "in-progress"),
+    [tasks]
+  )
+
+  const stats = getTaskStats(tasks)
+
   const [isCompleteOpen, setIsCompleteOpen] = useState<string | null>(null)
   const [isDeleteOpen, setIsDeleteOpen] = useState<string | null>(null)
   const [isPauseOpen, setIsPauseOpen] = useState<string | null>(null)
 
-  // Stats
-  const totalTasks = 16 // Total from all pages
-  const pendingTasks = 5
-  const completedTasks = 11
-  const inProgressTasks = tasks.length
-
   const CARDDATA = [
     {
       name: "Total Tasks",
-      count: totalTasks,
+      count: stats.total,
       icon: <CircleArrowOutUpRight className="text-blue-500" />,
       color: "border-blue-500",
       url: "/dashboard/mytasks",
     },
     {
       name: "Pending Tasks",
-      count: pendingTasks,
+      count: stats.pending,
       icon: <AlertCircle className="text-yellow-500" />,
       color: "border-yellow-500",
-      url: "# ",
+      url: "/dashboard/mytasks",
     },
     {
       name: "In Progress",
-      count: inProgressTasks,
+      count: stats.inProgress,
       icon: <PlayCircle className="text-orange-500" />,
       color: "border-orange-500",
       url: "/dashboard/inprogress",
     },
     {
       name: "Complete Tasks",
-      count: completedTasks,
+      count: stats.completed,
       icon: <CheckCircle2 className="text-green-500" />,
       color: "border-green-500",
       url: "/dashboard/complete",
@@ -148,19 +95,19 @@ export default function InProgress() {
   ]
 
   const handleComplete = (id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id))
+    completeTask(id)
     setIsCompleteOpen(null)
     toast.success(`Task #${id} marked as completed!`)
   }
 
   const handleDelete = (id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id))
+    deleteTask(id)
     setIsDeleteOpen(null)
     toast.success(`Task #${id} deleted successfully.`)
   }
 
   const handlePause = (id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id))
+    pauseTask(id)
     setIsPauseOpen(null)
     toast.success(`Task #${id} moved to pending.`)
   }
@@ -203,7 +150,6 @@ export default function InProgress() {
       <StatusCard data={CARDDATA} />
 
       <div className="m-4 grid grid-cols-1 items-start gap-6 md:grid-cols-4">
-        {/* LEFT SECTION: In Progress Tasks Table */}
         <div className="col-span-1 overflow-hidden border bg-card shadow-sm md:col-span-4">
           <div className="flex items-center gap-2 border-b bg-muted/40 p-4">
             <PlayCircle className="h-5 w-5 text-orange-500" />
@@ -211,7 +157,7 @@ export default function InProgress() {
               Currently In Progress
             </h2>
             <Badge variant="secondary" className="ml-2 text-[10px]">
-              {tasks.length} Tasks
+              {inProgressTasks.length} Tasks
             </Badge>
           </div>
           <div className="overflow-x-auto">
@@ -228,8 +174,8 @@ export default function InProgress() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tasks.length > 0 ? (
-                  tasks.map((data) => (
+                {inProgressTasks.length > 0 ? (
+                  inProgressTasks.map((data) => (
                     <TableRow
                       key={data.id}
                       className="transition-colors hover:bg-muted/40"
@@ -254,10 +200,10 @@ export default function InProgress() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center text-xs text-muted-foreground">
-                        {data.dueDate}
+                        {formatDate(data.dueDate)}
                       </TableCell>
                       <TableCell className="text-center text-xs text-muted-foreground">
-                        {data.startedAt}
+                        {data.startedAt ? formatDate(data.startedAt) : "—"}
                       </TableCell>
                       <TableCell className="text-center">
                         <div className="flex items-center justify-center gap-1.5">
@@ -282,29 +228,19 @@ export default function InProgress() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem className="cursor-pointer gap-2">
-                              <PenIcon /> Edit
-                            </DropdownMenuItem>
-
-                            {/* Mark Complete */}
                             <DropdownMenuItem
                               className="cursor-pointer gap-2 text-green-600 focus:text-green-600"
                               onSelect={() => setIsCompleteOpen(data.id)}
                             >
                               <CheckCircle2 className="h-4 w-4" /> Complete
                             </DropdownMenuItem>
-
-                            {/* Pause / Move to Pending */}
                             <DropdownMenuItem
                               className="cursor-pointer gap-2 text-yellow-600 focus:text-yellow-600"
                               onSelect={() => setIsPauseOpen(data.id)}
                             >
                               <PauseCircle className="h-4 w-4" /> Pause
                             </DropdownMenuItem>
-
                             <DropdownMenuSeparator />
-
-                            {/* Delete */}
                             <DropdownMenuItem
                               className="cursor-pointer gap-2 text-red-500 focus:text-red-500"
                               onSelect={() => setIsDeleteOpen(data.id)}
@@ -314,7 +250,6 @@ export default function InProgress() {
                           </DropdownMenuContent>
                         </DropdownMenu>
 
-                        {/* Complete Dialog */}
                         <AlertDialog
                           open={isCompleteOpen === data.id}
                           onOpenChange={(open) =>
@@ -349,7 +284,6 @@ export default function InProgress() {
                           </AlertDialogContent>
                         </AlertDialog>
 
-                        {/* Pause Dialog */}
                         <AlertDialog
                           open={isPauseOpen === data.id}
                           onOpenChange={(open) => !open && setIsPauseOpen(null)}
@@ -381,7 +315,6 @@ export default function InProgress() {
                           </AlertDialogContent>
                         </AlertDialog>
 
-                        {/* Delete Dialog */}
                         <AlertDialog
                           open={isDeleteOpen === data.id}
                           onOpenChange={(open) =>
@@ -394,8 +327,8 @@ export default function InProgress() {
                                 Delete Task #{data.id}
                               </AlertDialogTitle>
                               <AlertDialogDescription>
-                                "Are you sure you want to delete this task? This
-                                action cannot be undone."
+                                Are you sure you want to delete this task? This
+                                action cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>

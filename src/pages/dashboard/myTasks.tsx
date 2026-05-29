@@ -39,7 +39,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
 import { Textarea } from "@/components/ui/textarea"
 import {
   ListTodo,
@@ -57,7 +56,7 @@ import {
   CircleArrowOutUpRight,
   Check,
 } from "lucide-react"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { toast } from "sonner"
 import {
   Dialog,
@@ -68,84 +67,27 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import LayoutDashboardIcon from "@/components/ui/layout-dashboard-icon"
+import {
+  formatDate,
+  getTaskStats,
+  isOverdue,
+  sortTasksByCreated,
+  sortTasksByDueDate,
+  sortTasksByPriority,
+  todayISO,
+} from "@/lib/task-utils"
+import { useTaskStore } from "@/store/task-store"
+import type { Priority, Status, Task } from "@/types/task"
 
-// Fix: MoreHorizontalIcon was not defined; use MoreHorizontal from lucide-react
 const MoreHorizontalIcon = MoreHorizontal
 
-type Priority = "High" | "Medium" | "Low"
-type Status = "pending" | "in-progress" | "completed"
-
-interface Task {
-  id: string
-  description: string
-  priority: Priority
-  dueDate: string
-  status: Status
-  createdAt: string
-}
-
-const INITIAL_TASKS: Task[] = [
-  {
-    id: "1",
-    description: "Set up automated nightly cron jobs for PostgreSQL backup.",
-    priority: "High",
-    dueDate: "2026-05-29",
-    status: "pending",
-    createdAt: "2026-05-20",
-  },
-  {
-    id: "2",
-    description:
-      "Sync the new design system components with the frontend team.",
-    priority: "Medium",
-    dueDate: "2026-06-01",
-    status: "in-progress",
-    createdAt: "2026-05-21",
-  },
-  {
-    id: "3",
-    description: "Resolve token expiration redirect loop on the client side.",
-    priority: "High",
-    dueDate: "2026-05-28",
-    status: "pending",
-    createdAt: "2026-05-22",
-  },
-  {
-    id: "4",
-    description: "Generate Swagger/OpenAPI spec files for the v2 endpoints.",
-    priority: "Low",
-    dueDate: "2026-06-05",
-    status: "pending",
-    createdAt: "2026-05-23",
-  },
-  {
-    id: "5",
-    description: "Compress and convert homepage graphics to WebP format.",
-    priority: "Low",
-    dueDate: "2026-06-10",
-    status: "completed",
-    createdAt: "2026-05-24",
-  },
-  {
-    id: "6",
-    description: "Implement OAuth2 authentication with Google and GitHub.",
-    priority: "High",
-    dueDate: "2026-06-15",
-    status: "in-progress",
-    createdAt: "2026-05-25",
-  },
-  {
-    id: "7",
-    description: "Write unit tests for the user authentication module.",
-    priority: "Medium",
-    dueDate: "2026-06-20",
-    status: "pending",
-    createdAt: "2026-05-26",
-  },
-]
-
 export default function TasksPage() {
-  const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS)
+  const tasks = useTaskStore((s) => s.tasks)
+  const addTask = useTaskStore((s) => s.addTask)
+  const updateTask = useTaskStore((s) => s.updateTask)
+  const deleteTask = useTaskStore((s) => s.deleteTask)
+  const toggleComplete = useTaskStore((s) => s.toggleComplete)
+
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<Status | "all">("all")
   const [priorityFilter, setPriorityFilter] = useState<Priority | "all">("all")
@@ -153,51 +95,45 @@ export default function TasksPage() {
     "dueDate"
   )
 
-  // Dialog states
   const [isDeleteOpen, setIsDeleteOpen] = useState<string | null>(null)
   const [isEditOpen, setIsEditOpen] = useState<string | null>(null)
   const [isAddOpen, setIsAddOpen] = useState(false)
 
-  // Form states
   const [editForm, setEditForm] = useState<Partial<Task>>({})
   const [addForm, setAddForm] = useState<Partial<Task>>({
     priority: "Medium",
     status: "pending",
-    dueDate: new Date().toISOString().split("T")[0],
+    dueDate: todayISO(),
   })
 
-  // Stats
-  const totalTasks = tasks.length
-  const pendingTasks = tasks.filter((t) => t.status === "pending").length
-  const completedTasks = tasks.filter((t) => t.status === "completed").length
+  const stats = getTaskStats(tasks)
 
   const CARDDATA = [
     {
       name: "Total Tasks",
-      count: totalTasks,
+      count: stats.total,
       icon: <CircleArrowOutUpRight className="text-blue-500" />,
       color: "border-blue-500",
-      url: "#",
+      url: "/dashboard/mytasks",
     },
     {
       name: "Pending Tasks",
-      count: pendingTasks,
+      count: stats.pending,
       icon: <AlertCircle className="text-yellow-500" />,
       color: "border-yellow-500",
-      url: "#",
+      url: "/dashboard/mytasks",
     },
     {
       name: "Complete Tasks",
-      count: completedTasks,
+      count: stats.completed,
       icon: <CheckCircle2 className="text-green-500" />,
       color: "border-green-500",
-      url: "#",
+      url: "/dashboard/complete",
     },
   ]
 
-  // Filter and sort
-  const filteredTasks = tasks
-    .filter((task) => {
+  const filteredTasks = useMemo(() => {
+    const filtered = tasks.filter((task) => {
       const matchesSearch = task.description
         .toLowerCase()
         .includes(searchQuery.toLowerCase())
@@ -207,35 +143,21 @@ export default function TasksPage() {
         priorityFilter === "all" || task.priority === priorityFilter
       return matchesSearch && matchesStatus && matchesPriority
     })
-    .sort((a, b) => {
-      if (sortBy === "dueDate")
-        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
-      if (sortBy === "priority") {
-        const prioMap = { High: 3, Medium: 2, Low: 1 }
-        return prioMap[b.priority] - prioMap[a.priority]
-      }
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    })
+
+    if (sortBy === "dueDate") return sortTasksByDueDate(filtered)
+    if (sortBy === "priority") return sortTasksByPriority(filtered)
+    return sortTasksByCreated(filtered)
+  }, [tasks, searchQuery, statusFilter, priorityFilter, sortBy])
 
   const handleDelete = (id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id))
+    deleteTask(id)
     setIsDeleteOpen(null)
     toast.success(`Task #${id} deleted successfully.`)
   }
 
   const handleStatusToggle = (id: string) => {
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === id
-          ? {
-              ...t,
-              status:
-                t.status === "completed" ? "pending" : ("completed" as Status),
-            }
-          : t
-      )
-    )
     const task = tasks.find((t) => t.id === id)
+    toggleComplete(id)
     const newStatus = task?.status === "completed" ? "pending" : "completed"
     toast.success(`Task marked as ${newStatus}.`)
   }
@@ -250,11 +172,7 @@ export default function TasksPage() {
       toast.error("Please fill all required fields.")
       return
     }
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === editForm.id ? ({ ...t, ...editForm } as Task) : t
-      )
-    )
+    updateTask(editForm.id, editForm)
     setIsEditOpen(null)
     toast.success("Task updated successfully.")
   }
@@ -264,34 +182,19 @@ export default function TasksPage() {
       toast.error("Please fill all required fields.")
       return
     }
-    const newTask: Task = {
-      id: String(tasks.length + 1),
-      description: addForm.description!,
+    addTask({
+      description: addForm.description,
       priority: (addForm.priority as Priority) || "Medium",
-      dueDate: addForm.dueDate!,
+      dueDate: addForm.dueDate,
       status: (addForm.status as Status) || "pending",
-      createdAt: new Date().toISOString().split("T")[0],
-    }
-    setTasks((prev) => [...prev, newTask])
+    })
     setIsAddOpen(false)
     setAddForm({
       priority: "Medium",
       status: "pending",
-      dueDate: new Date().toISOString().split("T")[0],
+      dueDate: todayISO(),
     })
     toast.success("Task added successfully.")
-  }
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    })
-  }
-
-  const isOverdue = (dueDate: string) => {
-    return new Date(dueDate) < new Date(new Date().setHours(0, 0, 0, 0))
   }
 
   const getStatusIcon = (status: Status) => {
@@ -308,9 +211,8 @@ export default function TasksPage() {
   return (
     <>
       <div className="">
-        {" "}
         <PageHeader
-          icon={<LayoutDashboardIcon size={2} />}
+          icon={<LayoutDashboardIcon size={20} />}
           title="My Tasks"
           description="Manage, organize, and track all your tasks in one centralized view."
           btnname="Add Task"
@@ -319,10 +221,8 @@ export default function TasksPage() {
         />
         <StatusCard data={CARDDATA} />
         <div className="m-4">
-          {/* Filters Bar */}
           <div className="flex flex-col gap-4 border bg-card p-4 shadow-sm md:flex-row md:items-center md:justify-between">
             <div className="flex flex-1 flex-col gap-4 md:flex-row md:items-center">
-              {/* Search */}
               <div className="relative max-w-[350px] flex-1">
                 <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -333,7 +233,6 @@ export default function TasksPage() {
                 />
               </div>
 
-              {/* Filters */}
               <div className="flex flex-wrap gap-2">
                 <Select
                   value={statusFilter}
@@ -391,14 +290,13 @@ export default function TasksPage() {
             </div>
           </div>
 
-          {/* Tasks Table */}
           <div className="border bg-card shadow-sm">
             <div>
               <Table className="w-full">
                 <TableHeader className="bg-muted/50">
                   <TableRow>
                     <TableHead className="w-12 text-center">
-                      <Check size={"16px"} />{" "}
+                      <Check size={"16px"} />
                     </TableHead>
                     <TableHead>Task Description</TableHead>
                     <TableHead className="w-28 text-center">Priority</TableHead>
@@ -458,23 +356,20 @@ export default function TasksPage() {
                           <div className="flex items-center justify-center gap-1.5">
                             <CalendarIcon
                               className={`h-3.5 w-3.5 ${
-                                isOverdue(task.dueDate) &&
-                                task.status !== "completed"
+                                isOverdue(task.dueDate, task.status)
                                   ? "text-red-500"
                                   : "text-muted-foreground"
                               }`}
                             />
                             <span
                               className={`text-xs ${
-                                isOverdue(task.dueDate) &&
-                                task.status !== "completed"
+                                isOverdue(task.dueDate, task.status)
                                   ? "font-semibold text-red-500"
                                   : "text-muted-foreground"
                               }`}
                             >
                               {formatDate(task.dueDate)}
-                              {isOverdue(task.dueDate) &&
-                                task.status !== "completed" &&
+                              {isOverdue(task.dueDate, task.status) &&
                                 " (Overdue)"}
                             </span>
                           </div>
@@ -537,7 +432,6 @@ export default function TasksPage() {
                             </DropdownMenuContent>
                           </DropdownMenu>
 
-                          {/* Delete Dialog */}
                           <AlertDialog
                             open={isDeleteOpen === task.id}
                             onOpenChange={(open) =>
@@ -566,7 +460,6 @@ export default function TasksPage() {
                             </AlertDialogContent>
                           </AlertDialog>
 
-                          {/* Edit Dialog */}
                           <Dialog
                             open={isEditOpen === task.id}
                             onOpenChange={(open) =>
@@ -578,7 +471,7 @@ export default function TasksPage() {
                                 <DialogTitle>Edit Task #{task.id}</DialogTitle>
                                 <DialogDescription>
                                   Make changes to your task here. Click save
-                                  when you're done.
+                                  when you&apos;re done.
                                 </DialogDescription>
                               </DialogHeader>
                               <div className="grid gap-4 py-4">
@@ -699,7 +592,7 @@ export default function TasksPage() {
             </div>
           </div>
         </div>
-        {/* Add Task Dialog */}
+
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>

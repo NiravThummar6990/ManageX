@@ -4,24 +4,41 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
-import { Sun, Moon, Bell, User, Backpack } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Sun, Moon, Bell, User } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import { useTheme } from "@/components/theme-provider"
+import { useUserStore } from "@/store/user-store"
+import { toast } from "sonner"
 
 export default function Setting() {
-  // Example settings state
-  const [darkMode, setDarkMode] = useState(false)
-  const [emailNotif, setEmailNotif] = useState(true)
-  const [userName, setUserName] = useState("Nirav Thummar")
-  const [email, setEmail] = useState("niravthummar4129@gmail.com")
+  const navigate = useNavigate()
+  const { theme, setTheme } = useTheme()
+
+  const name = useUserStore((s) => s.name)
+  const email = useUserStore((s) => s.email)
+  const emailNotifications = useUserStore((s) => s.emailNotifications)
+  const updateProfile = useUserStore((s) => s.updateProfile)
+  const setEmailNotifications = useUserStore((s) => s.setEmailNotifications)
+
+  const [userName, setUserName] = useState(name)
+  const [userEmail, setUserEmail] = useState(email)
+  const darkMode = theme === "dark"
+
+  useEffect(() => {
+    setUserName(name)
+    setUserEmail(email)
+  }, [name, email])
 
   const handleProfileSave = (e: React.FormEvent) => {
     e.preventDefault()
-    // Save logic here (maybe API)
-    alert("Profile updated!")
+    updateProfile({ name: userName, email: userEmail })
+    toast.success("Profile updated!")
   }
 
-  const navigate = useNavigate()
+  const handleDarkMode = (checked: boolean) => {
+    setTheme(checked ? "dark" : "light")
+  }
 
   return (
     <>
@@ -39,9 +56,7 @@ export default function Setting() {
           &lt; back
         </Button>
       </div>
-      {/* Responsive grid: full width on mobile, max-w-2xl on larger screens */}
       <div className="xs:px-2 mx-auto grid w-full max-w-full gap-4 px-2 sm:px-4 md:max-w-[730px] md:px-0">
-        {/* Profile Card */}
         <Card className="w-full">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -66,8 +81,8 @@ export default function Setting() {
                 <Input
                   id="email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={userEmail}
+                  onChange={(e) => setUserEmail(e.target.value)}
                   autoComplete="off"
                   className="w-full"
                 />
@@ -79,7 +94,6 @@ export default function Setting() {
           </CardContent>
         </Card>
 
-        {/* Appearance Card */}
         <Card className="w-full">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -96,14 +110,13 @@ export default function Setting() {
               <Switch
                 id="darkmode"
                 checked={darkMode}
-                onCheckedChange={setDarkMode}
+                onCheckedChange={handleDarkMode}
                 className="xs:mt-0 mt-1"
               />
             </div>
           </CardContent>
         </Card>
 
-        {/* Notifications Card */}
         <Card className="w-full">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -118,8 +131,8 @@ export default function Setting() {
               </Label>
               <Switch
                 id="notif"
-                checked={emailNotif}
-                onCheckedChange={setEmailNotif}
+                checked={emailNotifications}
+                onCheckedChange={setEmailNotifications}
                 className="xs:mt-0 mt-1"
               />
             </div>

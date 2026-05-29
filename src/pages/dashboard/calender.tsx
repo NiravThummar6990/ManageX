@@ -18,97 +18,49 @@ import {
 } from "lucide-react"
 import CreditCard from "@/components/ui/credit-card"
 import { StatusCard } from "@/components/dashboard/StatusCard"
-
-// Calendar task data
-const TASKS_DATA = [
-  {
-    id: "1",
-    description: "Set up automated nightly cron jobs for PostgreSQL backup.",
-    priority: "High",
-    dueDate: "May 29, 2026",
-    status: "completed",
-  },
-  {
-    id: "2",
-    description:
-      "Sync the new design system components with the frontend team.",
-    priority: "Medium",
-    dueDate: "June 01, 2026",
-    status: "pending",
-  },
-  {
-    id: "3",
-    description: "Resolve token expiration redirect loop on the client side.",
-    priority: "High",
-    dueDate: "May 28, 2026",
-    status: "in-progress",
-  },
-  {
-    id: "4",
-    description: "Generate Swagger/OpenAPI spec files for the v2 endpoints.",
-    priority: "Low",
-    dueDate: "June 05, 2026",
-    status: "pending",
-  },
-  {
-    id: "5",
-    description: "Compress and convert homepage graphics to WebP format.",
-    priority: "Low",
-    dueDate: "June 10, 2026",
-    status: "completed",
-  },
-]
-
-// Status card data
-const STATUSCARDS = [
-  {
-    name: "Total Tasks",
-    count: TASKS_DATA.length,
-    color: "border-blue-500",
-    icon: <CircleArrowOutUpRight className="text-blue-500" />,
-  },
-  {
-    name: "Pending",
-    count: TASKS_DATA.filter((t) => t.status === "pending").length,
-    color: "border-yellow-500",
-    icon: <AlertCircle className="text-yellow-500" />,
-  },
-
-  {
-    name: "In Progress",
-    count: TASKS_DATA.filter((t) => t.status === "in-progress").length,
-    color: "border-orange-500",
-    icon: <PlayCircle className="text-orange-500" />,
-  },
-  {
-    name: "Completed",
-    count: TASKS_DATA.filter((t) => t.status === "completed").length,
-    color: "border-green-500",
-    icon: <CheckCircle2 className="text-green-500" />,
-  },
-]
-
-/**
- * Utility function to compare a string date (e.g. 'May 29, 2026')
- * to a JS Date object. Returns true if it's exactly the same day.
- */
-function isSameDay(dateStr: string, calendarDate: Date) {
-  const d = new Date(dateStr)
-  return (
-    d.getDate() === calendarDate.getDate() &&
-    d.getMonth() === calendarDate.getMonth() &&
-    d.getFullYear() === calendarDate.getFullYear()
-  )
-}
+import { formatDate, getTaskStats, isSameDay } from "@/lib/task-utils"
+import { useTaskStore } from "@/store/task-store"
 
 export default function CalendarPage() {
-  // Select today's date by default
+  const tasks = useTaskStore((s) => s.tasks)
+  const stats = getTaskStats(tasks)
+
   const [date, setDate] = React.useState<Date | undefined>(() => new Date())
 
-  // Filter tasks for currently selected date
-  const filteredTasks = TASKS_DATA.filter(
+  const filteredTasks = tasks.filter(
     (task) => date && isSameDay(task.dueDate, date)
   )
+
+  const STATUSCARDS = [
+    {
+      name: "Total Tasks",
+      count: stats.total,
+      color: "border-blue-500",
+      icon: <CircleArrowOutUpRight className="text-blue-500" />,
+      url: "/dashboard/mytasks",
+    },
+    {
+      name: "Pending",
+      count: stats.pending,
+      color: "border-yellow-500",
+      icon: <AlertCircle className="text-yellow-500" />,
+      url: "/dashboard/mytasks",
+    },
+    {
+      name: "In Progress",
+      count: stats.inProgress,
+      color: "border-orange-500",
+      icon: <PlayCircle className="text-orange-500" />,
+      url: "/dashboard/inprogress",
+    },
+    {
+      name: "Completed",
+      count: stats.completed,
+      color: "border-green-500",
+      icon: <CheckCircle2 className="text-green-500" />,
+      url: "/dashboard/complete",
+    },
+  ]
 
   return (
     <>
@@ -119,7 +71,6 @@ export default function CalendarPage() {
       />
       <StatusCard data={STATUSCARDS} />
       <div className="m-4 grid grid-cols-1 items-start gap-6 md:grid-cols-3">
-        {/* Calendar - occupies two columns on desktop */}
         <div className="col-span-1 flex justify-center border bg-card p-4 shadow-sm md:col-span-2">
           <CalendarComponent
             mode="single"
@@ -128,7 +79,7 @@ export default function CalendarPage() {
             className="w-full max-w-full border bg-background/50"
             modifiers={{
               hasTask: (day) =>
-                TASKS_DATA.some((task) => isSameDay(task.dueDate, day)),
+                tasks.some((task) => isSameDay(task.dueDate, day)),
             }}
             modifiersClassNames={{
               hasTask:
@@ -137,7 +88,6 @@ export default function CalendarPage() {
           />
         </div>
 
-        {/* Tasks for the selected day */}
         <div className="col-span-1 flex flex-col gap-4">
           <Card className="border bg-card shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b bg-muted/40 p-4">
@@ -213,6 +163,9 @@ export default function CalendarPage() {
                     </div>
                     <p className="text-xs leading-relaxed font-medium text-card-foreground">
                       {task.description}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      Due: {formatDate(task.dueDate)}
                     </p>
                   </div>
                 ))

@@ -13,6 +13,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { useUserStore } from "@/store/user-store"
 import {
   TerminalSquareIcon,
   Motorbike,
@@ -24,13 +25,7 @@ import {
   Users,
 } from "lucide-react"
 
-// This is sample data.
-const data = {
-  user: {
-    name: "Nirav Thummar",
-    email: "nirathummar4129@gmail.com",
-    avatar: "../src/assets/NT_avatar.jpeg",
-  },
+const sidebarData = {
   teams: [
     {
       name: "ManageX",
@@ -174,17 +169,21 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const name = useUserStore((s) => s.name)
+  const email = useUserStore((s) => s.email)
+  const avatar = useUserStore((s) => s.avatar)
+
   return (
     <Sidebar className="z-50" collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher teams={sidebarData.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects Workspaces={data.Workspace} />
+        <NavMain items={sidebarData.navMain} />
+        <NavProjects Workspaces={sidebarData.Workspace} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={{ name, email, avatar }} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

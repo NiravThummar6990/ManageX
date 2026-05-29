@@ -9,10 +9,12 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import XIcon from "./ui/x-icon"
 import { useState } from "react"
 import { Eye, EyeOff } from "lucide-react"
+import { useUserStore } from "@/store/user-store"
+import { toast } from "sonner"
 
 export function SignupForm({
   className,
@@ -20,14 +22,32 @@ export function SignupForm({
 }: React.ComponentProps<"div">) {
   const [open, setOpen] = useState(false)
   const [openConform, setOpenConform] = useState(false)
+  const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [conformPassword, setConformPassword] = useState("")
+  const navigate = useNavigate()
+  const register = useUserStore((s) => s.register)
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (password !== conformPassword) {
+      toast.error("Passwords do not match.")
+      return
+    }
+    if (register(username, email, password)) {
+      toast.success("Account created successfully!")
+      navigate("/dashboard")
+      return
+    }
+    toast.error("Please fill all fields. Password must be at least 8 characters.")
+  }
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="to-[#2d3730 overflow-hidden bg-gradient-to-br from-[#637a6a] via-[#191d23] p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-6 md:p-8">
+          <form className="p-6 md:p-8" onSubmit={handleSubmit}>
             <FieldGroup>
               <div className="-mt-2 w-fit p-1">
                 <Link to="/ " className="sm:inline">
@@ -51,6 +71,8 @@ export function SignupForm({
                       type="text"
                       placeholder="Nirav Thummar"
                       required
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
                     />
                   </Field>
                   <Field>
@@ -75,6 +97,8 @@ export function SignupForm({
                   type="email"
                   placeholder="m@example.com"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
                 <FieldDescription>
                   We&apos;ll use this to contact you. We will not share your

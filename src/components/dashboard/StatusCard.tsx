@@ -24,7 +24,7 @@ export function StatusCard({
         >
           <div className="flex items-center gap-4">
             <div
-              onClick={() => navigate(`${card.url}`)}
+              onClick={() => card.url && navigate(card.url)}
               className="xs:h-12 xs:w-12 xs:text-2xl flex h-10 w-10 cursor-pointer items-center justify-center bg-primary/20 text-xl md:text-4xl"
             >
               {card.icon}

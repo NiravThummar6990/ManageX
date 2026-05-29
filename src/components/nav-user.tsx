@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/sidebar"
 import { ChevronsUpDownIcon, LogOutIcon, Cog } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import { useUserStore } from "@/store/user-store"
 
 export function NavUser({
   user,
@@ -28,6 +29,7 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
   const navigate = useNavigate()
+  const logout = useUserStore((s) => s.logout)
 
   return (
     <SidebarMenu>
@@ -78,7 +80,10 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant={"destructive"}
-              onClick={() => (window.location.href = "/")}
+              onClick={() => {
+                logout()
+                navigate("/")
+              }}
             >
               <LogOutIcon />
               Log out

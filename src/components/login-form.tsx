@@ -9,10 +9,12 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import XIcon from "./ui/x-icon"
 import { Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
+import { useUserStore } from "@/store/user-store"
+import { toast } from "sonner"
 
 export function LoginForm({
   className,
@@ -21,12 +23,24 @@ export function LoginForm({
   const [open, setOpen] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const navigate = useNavigate()
+  const login = useUserStore((s) => s.login)
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (login(email, password)) {
+      toast.success("Welcome back!")
+      navigate("/dashboard")
+      return
+    }
+    toast.error("Please enter email and password.")
+  }
 
   return (
     <div className={cn("flex flex-col gap-4", className)} {...props}>
       <Card className="overflow-hidden bg-gradient-to-br from-[#5f7465] via-[#191d23] to-[#2d3730] p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-6 md:p-8">
+          <form className="p-6 md:p-8" onSubmit={handleSubmit}>
             <FieldGroup>
               <div className="-mt-2 w-fit p-1">
                 <Link to="/ " className="sm:inline">
