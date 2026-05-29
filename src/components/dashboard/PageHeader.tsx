@@ -1,4 +1,4 @@
-  import { Button } from "../ui/button"
+import { Button } from "../ui/button"
 
 export default function PageHeader({
   btnIcon,
@@ -26,7 +26,7 @@ export default function PageHeader({
             </div>
             <h2 className="text-md ml-2">{title}</h2>
           </div>
-          <span className="mt-1 max-w-xs text-sm text-gray-500">
+          <span className="mt-1 max-w-[350px] text-sm text-gray-500">
             {description}
           </span>
         </div>

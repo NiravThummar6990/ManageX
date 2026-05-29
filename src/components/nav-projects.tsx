@@ -14,7 +14,7 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
+  useSidebar, // 👈 ૧. આ હૂક પહેલેથી ઇમ્પોર્ટ છે જ
 } from "@/components/ui/sidebar"
 import {
   MoreHorizontalIcon,
@@ -22,6 +22,7 @@ import {
   ArrowRightIcon,
   Trash2Icon,
 } from "lucide-react"
+import { Link } from "react-router-dom" // 👈 ૨. પેજ રીફ્રેશ અટકાવવા માટે Link ઇમ્પોર્ટ કરો
 
 export function NavProjects({
   Workspaces,
@@ -32,7 +33,8 @@ export function NavProjects({
     icon: React.ReactNode
   }[]
 }) {
-  const { isMobile } = useSidebar()
+  // 👈 ૩. હૂકમાંથી setOpenMobile પણ લઈ લો
+  const { isMobile, setOpenMobile } = useSidebar()
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
@@ -40,11 +42,20 @@ export function NavProjects({
       <SidebarMenu>
         {Workspaces.map((item) => (
           <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild>
-              <a href={item.url}>
+            <SidebarMenuButton
+              asChild
+              // 👈 ૪. અહિયાં ઓન-ક્લિક ઇવેન્ટ સેટ કરો
+              onClick={() => {
+                if (isMobile) {
+                  setOpenMobile(false)
+                }
+              }}
+            >
+              {/* 👈 ૫. <a> ની જગ્યાએ <Link> વાપરો જેથી સ્મૂધલી પેજ ચેન્જ થાય */}
+              <Link to={item.url}>
                 {item.icon}
                 <span>{item.name}</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
             {/* <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -78,12 +89,6 @@ export function NavProjects({
             </DropdownMenu> */}
           </SidebarMenuItem>
         ))}
-        {/* <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70">
-            <MoreHorizontalIcon className="text-sidebar-foreground/70" />
-            <span>More</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem> */}
       </SidebarMenu>
     </SidebarGroup>
   )

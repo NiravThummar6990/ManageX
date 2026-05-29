@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/sidebar"
 import { ChevronsUpDownIcon, LogOutIcon, Cog } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-import { Button } from "./ui/button"
 
 export function NavUser({
   user,
@@ -77,11 +76,12 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Button variant={"destructive"} onClick={() => navigate("/")}>
-                <LogOutIcon />
-                Log out
-              </Button>
+            <DropdownMenuItem
+              variant={"destructive"}
+              onClick={() => (window.location.href = "/")}
+            >
+              <LogOutIcon />
+              Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

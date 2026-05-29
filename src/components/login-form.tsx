@@ -23,7 +23,7 @@ export function LoginForm({
           <form className="p-6 md:p-8">
             <FieldGroup>
               <div className="-mt-2 w-fit p-1">
-                <Link to="/ " className="hidden sm:inline">
+                <Link to="/ " className="sm:inline">
                   <XIcon size={20} />
                 </Link>
               </div>

@@ -10,11 +10,9 @@ export default function Dashboard() {
       <AppSidebar />
       <SidebarInset>
         <NavBar />
-        <div className="relative min-h-screen overflow-hidden">
-          <div className="pointer-events-none absolute inset-0 opacity-40 backdrop-blur-3xl">
-            <GravityStarsBackground />
-          </div>
-          <div className="relative z-10">
+        <div className="relative flex min-h-screen items-center justify-center overflow-hidden">
+          <GravityStarsBackground className="absolute inset-0 z-0" />
+          <div className="relative z-10 w-full">
             <Outlet />
           </div>
         </div>

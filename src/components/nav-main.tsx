@@ -12,6 +12,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { ChevronRightIcon } from "lucide-react"
 import { useNavigate } from "react-router-dom"
@@ -31,6 +32,9 @@ export function NavMain({
   }[]
 }) {
   const navigate = useNavigate()
+
+  const { setOpenMobile, isMobile } = useSidebar()
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
@@ -44,7 +48,15 @@ export function NavMain({
           >
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
-                <SidebarMenuButton onClick={() => navigate(item.url)}>
+                <SidebarMenuButton
+                  onClick={() => {
+                    navigate(item.url)
+
+                    if (isMobile) {
+                      setOpenMobile(false)
+                    }
+                  }}
+                >
                   {item.icon}
                   <span>{item.title}</span>
                   {/* <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" /> */}
@@ -59,7 +71,7 @@ export function NavMain({
                           <span>{subItem.title}</span>
                         </a>
                       </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
+                    </SidebarMenuItem>
                   ))}
                 </SidebarMenuSub>
               </CollapsibleContent> */}

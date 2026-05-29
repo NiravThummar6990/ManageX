@@ -3,7 +3,7 @@ import Calendar from "@/pages/dashboard/calender"
 import CompleteTask from "@/pages/dashboard/completeTask"
 import DashboardHome from "@/pages/dashboard/dashboardHome"
 import InProgress from "@/pages/dashboard/inProgress"
-import MyTasks from "@/pages/dashboard/myTasks"
+import TasksPage from "@/pages/dashboard/myTasks"
 import Home from "@/pages/home"
 import Login from "@/pages/login"
 import NotFound from "@/pages/notfound"
@@ -20,7 +20,7 @@ const Index = () => {
       <Route path="/setting" element={<Setting />} />
       <Route path="/dashboard" element={<Dashboard />}>
         <Route index element={<DashboardHome />} />
-        <Route path="mytasks" element={<MyTasks />} />
+        <Route path="mytasks" element={<TasksPage />} />
         <Route path="inprogress" element={<InProgress />} />
         <Route path="complete" element={<CompleteTask />} />
         <Route path="calender" element={<Calendar />} />
