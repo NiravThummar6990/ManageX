@@ -11,11 +11,17 @@ import {
 import { Input } from "@/components/ui/input"
 import { Link } from "react-router-dom"
 import XIcon from "./ui/x-icon"
+import { Eye, EyeOff } from "lucide-react"
+import { useState } from "react"
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const [open, setOpen] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+
   return (
     <div className={cn("flex flex-col gap-4", className)} {...props}>
       <Card className="overflow-hidden bg-gradient-to-br from-[#5f7465] via-[#191d23] to-[#2d3730] p-0">
@@ -34,17 +40,23 @@ export function LoginForm({
                 </p>
               </div>
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel htmlFor="email">
+                  Email<span className="pb-2 text-red-400">*</span>
+                </FieldLabel>
                 <Input
                   id="email"
                   type="email"
                   placeholder="m@example.com"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </Field>
               <Field>
                 <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
+                  <FieldLabel htmlFor="password">
+                    Password<span className="pb-2 text-red-400">*</span>
+                  </FieldLabel>
                   <a
                     href="#"
                     className="ml-auto text-sm underline-offset-2 hover:underline"
@@ -52,7 +64,28 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={open ? "text" : "password"}
+                    required
+                    className="pr-10"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <span
+                    onClick={() => setOpen(!open)}
+                    className="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-3"
+                  >
+                    {password == "" ? (
+                      ""
+                    ) : open ? (
+                      <EyeOff size={20} />
+                    ) : (
+                      <Eye size={20} />
+                    )}
+                  </span>
+                </div>
               </Field>
               <Field>
                 <Button type="submit">Login</Button>

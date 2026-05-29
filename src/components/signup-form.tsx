@@ -11,11 +11,18 @@ import {
 import { Input } from "@/components/ui/input"
 import { Link } from "react-router-dom"
 import XIcon from "./ui/x-icon"
+import { useState } from "react"
+import { Eye, EyeOff } from "lucide-react"
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const [open, setOpen] = useState(false)
+  const [openConform, setOpenConform] = useState(false)
+  const [password, setPassword] = useState("")
+  const [conformPassword, setConformPassword] = useState("")
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="to-[#2d3730 overflow-hidden bg-gradient-to-br from-[#637a6a] via-[#191d23] p-0">
@@ -30,11 +37,39 @@ export function SignupForm({
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Create your account</h1>
                 <p className="text-sm text-balance text-muted-foreground">
-                  Enter your email below to create your account
+                  Enter your username and email below to create your account
                 </p>
               </div>
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <Field className="grid grid-cols-2 gap-4">
+                  <Field>
+                    <FieldLabel htmlFor="uname">
+                      Username <span className="pb-2 text-red-400">*</span>
+                    </FieldLabel>
+                    <Input
+                      id="uname"
+                      type="text"
+                      placeholder="Nirav Thummar"
+                      required
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="profile">
+                      Profile Picture{" "}
+                      <span className="pb-2 text-red-400">*</span>
+                    </FieldLabel>
+                    <Input id="profile" type="file" accept="image/*" required />
+                  </Field>
+                </Field>
+                <FieldDescription>
+                  Choose a username and upload a profile picture. Both fields
+                  are required.
+                </FieldDescription>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="email">
+                  Email <span className="pb-2 text-red-400">*</span>
+                </FieldLabel>
                 <Input
                   id="email"
                   type="email"
@@ -49,14 +84,57 @@ export function SignupForm({
               <Field>
                 <Field className="grid grid-cols-2 gap-4">
                   <Field>
-                    <FieldLabel htmlFor="password">Password</FieldLabel>
-                    <Input id="password" type="password" required />
+                    <FieldLabel htmlFor="password">
+                      Password <span className="pb-2 text-red-400">*</span>
+                    </FieldLabel>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={open ? "text" : "password"}
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                      <span
+                        onClick={() => setOpen(!open)}
+                        className="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-3"
+                      >
+                        {password == "" ? (
+                          ""
+                        ) : open ? (
+                          <EyeOff size={16} />
+                        ) : (
+                          <Eye size={16} />
+                        )}
+                      </span>
+                    </div>
                   </Field>
                   <Field>
                     <FieldLabel htmlFor="confirm-password">
-                      Confirm Password
+                      Confirm Password{" "}
+                      <span className="pb-2 text-red-400">*</span>
                     </FieldLabel>
-                    <Input id="confirm-password" type="password" required />
+                    <div className="relative">
+                      <Input
+                        id="confirm-password"
+                        type={openConform ? "text" : "password"}
+                        required
+                        value={conformPassword}
+                        onChange={(e) => setConformPassword(e.target.value)}
+                      />
+                      <span
+                        onClick={() => setOpenConform(!openConform)}
+                        className="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-3"
+                      >
+                        {conformPassword == "" ? (
+                          ""
+                        ) : openConform ? (
+                          <EyeOff size={16} />
+                        ) : (
+                          <Eye size={16} />
+                        )}
+                      </span>
+                    </div>
                   </Field>
                 </Field>
                 <FieldDescription>
